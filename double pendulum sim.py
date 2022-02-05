@@ -67,7 +67,7 @@ def game():
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                if even.key == pygame.K_SPACE:
+                if event.key == pygame.K_SPACE:
                     ball_2.position[0] += 1
         pygame.display.update() #rendering frame
         display.fill((255,255,255)) # background colour
