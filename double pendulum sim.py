@@ -4,7 +4,7 @@ import sys
 
 
 pygame.init()
-
+ 
 display = pygame.display.set_mode((800,800))
 clock = pygame.time.Clock()
 space = pymunk.Space()
@@ -25,6 +25,12 @@ class Ball():
     def draw(self):
         pygame.draw.circle(display, (255, 0, 0), convert_coordinates(self.body.position), 10)
 
+
+def swinging_up(position):
+    
+    
+    
+    
 class Leg():
     def __init__(self, x, y):
         self.body = pymunk.Body()
@@ -32,9 +38,6 @@ class Leg():
         self.shape = pymunk.Circle(self.body, 10)
         self.shape.density = 1
         self.shape.elasticity = 1
-        self.swinging_up = False
-        self.swinging_down = False
-        
         space.add(self.body, self.shape) # for dynamic bodies we have to add to pymunk space
     def draw(self):
         pygame.draw.circle(display, (255, 0, 0), convert_coordinates(self.body.position), 10)
@@ -68,7 +71,6 @@ def game():
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    ball_2.position[0] += 1
         pygame.display.update() #rendering frame
         display.fill((255,255,255)) # background colour
         ball_1.draw()
