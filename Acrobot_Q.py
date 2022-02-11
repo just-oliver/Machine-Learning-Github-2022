@@ -17,21 +17,26 @@ env = gym.make("Acrobot-v1")
 
 
 Q = np.zeros((4096, 3))
+Q_best = np.zeros((4096, 3))
+time_best = 1000
 
-episodeS = 10
-max_stepS = 500
+episodeS = 1000
+max_stepS = 1000
 
 learning_rate = 0.9
 discount = 0.95
 random_prob = 0.2
 
-rewards = []
+#rewards = []
 for episode in range(episodeS):
     observation = env.reset()
     state = mapper(observation)
     
-    for _ in range(max_stepS):
-        env.render()
+    if((episode % 100) == 0):
+        print("On episode " + str(episode))
+    
+    for stepper in range(max_stepS):
+        #env.render()
         
         if np.random.uniform(0, 1) < random_prob:
             action = env.action_space.sample()
@@ -48,9 +53,25 @@ for episode in range(episodeS):
         state = next_state
         
         if done:
-            rewards.append(reward)
+            #rewards.append(reward)
             random_prob -= 0.01
+            if(stepper < time_best):
+                Q_best = Q
+                time_best = stepper
             break
 
+observation = env.reset()
+state = mapper(observation)
+for _  in range(max_stepS):
+    env.render()
+    action = np.argmax(Q_best[state, :])
+    next_observation, non_reward, done, _ = env.step(action)
+    next_state = mapper(next_observation)
+    state = next_state
+    
+    if done:
+        print("Best time of " + str(time_best) + " steps")
+        break
+
 env.close()
-print(rewards)
+#print(rewards)
