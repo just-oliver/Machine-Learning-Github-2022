@@ -45,6 +45,7 @@ while True:  # Run until solved
             action_probs_history.append(tf.math.log(action_probs[0, action]))
             
             state, reward, done, _ = env.step(action)
+            reward = state[5] ** 2
             rewards_history.append(reward)
             episode_reward += reward
             
@@ -87,7 +88,7 @@ while True:  # Run until solved
         template = "running reward: {:.2f} at episode {}"
         print(template.format(running_reward, episode_count))
     
-    if running_reward > 0:  # Condition to consider the task solved
+    if running_reward > 5000:  # Condition to consider the task solved
         print("Solved at episode {}!".format(episode_count))
         break
 
