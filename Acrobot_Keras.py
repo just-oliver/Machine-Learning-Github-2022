@@ -13,10 +13,15 @@ eps = np.finfo(np.float32).eps.item()  # Smallest number such that 1.0 + eps != 
 
 num_inputs = 6
 num_actions = 3
-num_hidden = 30
 
 inputs = layers.Input(shape=(num_inputs,))
+
+#######################################################################################
+# This section determines how the neural network processes data. Alter to experiment
+num_hidden = 30
 common = layers.Dense(num_hidden, activation="sigmoid")(inputs)
+#######################################################################################
+
 action = layers.Dense(num_actions, activation="softmax")(common)
 critic = layers.Dense(1)(common)
 
