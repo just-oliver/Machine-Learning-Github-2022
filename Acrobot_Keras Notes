@@ -1,0 +1,3 @@
+Tested both sigmoid and relu single-layer neural networks.
+Both worked better with a higher number of hidden perceptrons, but issues occurred when 300 sigmoid points were used.
+Possible create a graph as well as a procedural creation of multiple networks to display different solution efficiencies
