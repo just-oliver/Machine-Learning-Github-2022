@@ -6,17 +6,17 @@ from tensorflow import keras
 from tensorflow.keras import layers
 
 gamma = 0.99
-max_steps_per_episode = 1000
+max_steps_per_episode = 500
 env = gym.make("Acrobot-v1")  # Create the environment
 
 eps = np.finfo(np.float32).eps.item()  # Smallest number such that 1.0 + eps != 1.0
 
 num_inputs = 6
 num_actions = 3
-num_hidden = 120
+num_hidden = 30
 
 inputs = layers.Input(shape=(num_inputs,))
-common = layers.Dense(num_hidden, activation="relu")(inputs)
+common = layers.Dense(num_hidden, activation="sigmoid")(inputs)
 action = layers.Dense(num_actions, activation="softmax")(common)
 critic = layers.Dense(1)(common)
 
@@ -47,9 +47,9 @@ while True:  # Run until solved
             action_probs_history.append(tf.math.log(action_probs[0, action]))
             
             state, reward, done, _ = env.step(action)
-            reward = -state[0]
-            if done and state[0] < 0:
-                reward += 100
+            reward = 1 - state[0]
+            if done and timestep < max_steps_per_episode - 10:
+                reward += 10 * (max_steps_per_episode - timestep)
             rewards_history.append(reward)
             episode_reward += reward
             
@@ -92,7 +92,7 @@ while True:  # Run until solved
         template = "running reward: {:.2f} at episode {}"
         print(template.format(running_reward, episode_count))
     
-    if running_reward > 50:  # Condition to consider the task solved
+    if running_reward > 3750:  # Condition to consider the task solved
         print("Solved at episode {}!".format(episode_count))
         break
 
