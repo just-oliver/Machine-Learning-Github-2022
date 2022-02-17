@@ -35,6 +35,8 @@ while True:  # Run until solved
     episode_reward = 0
     with tf.GradientTape() as tape:
         for timestep in range(1, max_steps_per_episode):
+            if episode_count % 10 == 0:
+                env.render()
             state = tf.convert_to_tensor(state)
             state = tf.expand_dims(state, 0)
             
@@ -45,7 +47,9 @@ while True:  # Run until solved
             action_probs_history.append(tf.math.log(action_probs[0, action]))
             
             state, reward, done, _ = env.step(action)
-            reward = state[5] ** 2
+            reward = -state[0]
+            if done and state[0] < 0:
+                reward += 100
             rewards_history.append(reward)
             episode_reward += reward
             
@@ -88,7 +92,8 @@ while True:  # Run until solved
         template = "running reward: {:.2f} at episode {}"
         print(template.format(running_reward, episode_count))
     
-    if running_reward > 5000:  # Condition to consider the task solved
+    if running_reward > 50:  # Condition to consider the task solved
         print("Solved at episode {}!".format(episode_count))
         break
 
+env.close()
