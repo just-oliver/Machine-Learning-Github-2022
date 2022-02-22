@@ -1,0 +1,17 @@
+Joint   Maximum speed (degrees per second)  Forward limit(degrees)  Backward limit(degrees)
+Neck      370.6 +- 10%                      29.5                    38.5
+Shoulder  427.2 +- 10%                      119.5                   119.5
+Elbow     370.6 +- 10%                      2 inwards               88.5 inwards
+Hip       380.6 +- 10%                      27.7                    88
+Knee      380.6 +- 10%                      5.3                     121
+Ankle     380.6 +- 10%                      68.1                    52.8
+
+
+Joint1      Joint2      Distances(mm)
+Torso       Headmotor   126.5 up
+Torso       Shoulder    100 up, 98 side
+Shoulder    Elbow       105 forward, 15 side
+Torso       Hip         85 down, 50 side
+Hip         Knee        100 down
+Knee        Ankle       103 down
+
