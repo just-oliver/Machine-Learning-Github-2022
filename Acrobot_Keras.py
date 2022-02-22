@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+import matplotlib.pyplot as plt
 
 gamma = 0.99
 max_steps_per_episode = 500
@@ -18,7 +19,7 @@ inputs = layers.Input(shape=(num_inputs,))
 
 #######################################################################################
 # This section determines how the neural network processes data. Alter to experiment
-num_hidden = 30
+num_hidden = 12
 common = layers.Dense(num_hidden, activation="sigmoid")(inputs)
 #######################################################################################
 
@@ -35,13 +36,15 @@ rewards_history = []
 running_reward = 0
 episode_count = 0
 
+running_keeper = np.array([])
+
 while True:  # Run until solved
     state = env.reset()
     episode_reward = 0
     with tf.GradientTape() as tape:
         for timestep in range(1, max_steps_per_episode):
-            if episode_count % 10 == 0:
-                env.render()
+            #if episode_count % 10 == 0:
+                #env.render()
             state = tf.convert_to_tensor(state)
             state = tf.expand_dims(state, 0)
             
@@ -93,6 +96,8 @@ while True:  # Run until solved
         rewards_history.clear()
     
     episode_count += 1
+    running_keeper = np.append(running_keeper, running_reward)
+    
     if episode_count % 10 == 0:
         template = "running reward: {:.2f} at episode {}"
         print(template.format(running_reward, episode_count))
@@ -100,5 +105,14 @@ while True:  # Run until solved
     if running_reward > 3750:  # Condition to consider the task solved
         print("Solved at episode {}!".format(episode_count))
         break
+    
+    if episode_count == 1000:
+        break
 
 env.close()
+
+episode_keeper = np.arange(running_keeper.size) + 1
+plt.plot(episode_keeper, running_keeper)
+plt.xlabel("Running Reward")
+plt.ylabel("Episode")
+plt.title("Testing with 12-sigmoid on Acrobot-v1")
