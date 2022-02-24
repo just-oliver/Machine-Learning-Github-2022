@@ -19,11 +19,12 @@ inputs = layers.Input(shape=(num_inputs,))
 
 #######################################################################################
 # This section determines how the neural network processes data. Alter to experiment
-num_hidden = 12
+num_hidden = 30
 common = layers.Dense(num_hidden, activation="sigmoid")(inputs)
+dropper = layers.Dropout(0.1)(common)
 #######################################################################################
 
-action = layers.Dense(num_actions, activation="softmax")(common)
+action = layers.Dense(num_actions, activation="softmax")(dropper)
 critic = layers.Dense(1)(common)
 
 model = keras.Model(inputs=inputs, outputs=[action, critic])
@@ -51,6 +52,7 @@ while True:  # Run until solved
             action_probs, critic_value = model(state)
             critic_value_history.append(critic_value[0, 0])
             
+            
             action = np.random.choice(num_actions, p=np.squeeze(action_probs))
             action_probs_history.append(tf.math.log(action_probs[0, action]))
             
@@ -69,7 +71,7 @@ while True:  # Run until solved
         returns = []
         discounted_sum = 0
         for r in rewards_history[::-1]:
-            discounted_sum = r + gamma * discounted_sum
+            discounted_sum = r + (gamma * discounted_sum)
             returns.insert(0, discounted_sum)
         
         returns = np.array(returns)
@@ -110,9 +112,10 @@ while True:  # Run until solved
         break
 
 env.close()
+model.save("Acrobot_Model")
 
 episode_keeper = np.arange(running_keeper.size) + 1
 plt.plot(episode_keeper, running_keeper)
 plt.xlabel("Running Reward")
 plt.ylabel("Episode")
-plt.title("Testing with 12-sigmoid on Acrobot-v1")
+plt.title("Testing with 30-sigmoid on Acrobot-v1")
