@@ -27,4 +27,3 @@ class ActorCriticNetwork(keras.Model):
         pi = self.pi(value)
         
         return v, pi
-
