@@ -12,6 +12,7 @@ if __name__ == "__main__":
     best_score = env.reward_range[0]
     score_history = []
     load_checkpoint = True
+    update_model = False
     time_limit = 500
     
     if load_checkpoint:
@@ -28,7 +29,7 @@ if __name__ == "__main__":
             if done and timestep < time_limit - 10:
                 reward += 10 * (time_limit - timestep)
             score += reward
-            if not load_checkpoint:
+            if update_model:
                 agent.learn(observation, reward, observation_, done)
             observation = observation_
             if done:
@@ -38,7 +39,7 @@ if __name__ == "__main__":
             
         if avg_score > best_score:
             best_score = avg_score
-            if not load_checkpoint:
+            if update_model:
                 agent.save_models()
         print("episode ", i, "score %.1f" % score, "avg_score %.1f" % avg_score)
      
