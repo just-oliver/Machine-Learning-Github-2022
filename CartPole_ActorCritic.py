@@ -2,12 +2,12 @@
 import gym
 import numpy as np
 from ActorCritic import Agent
-#from learning.utils import plot_learning_curve
+import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     env = gym.make("CartPole-v1")
     agent = Agent(alpha=1e-5, n_actions=env.action_space.n)
-    n_games = 1000
+    n_games = 100
     
     filename = "cartpole.png"
     figure_file = "plots/" + filename
@@ -30,8 +30,8 @@ if __name__ == "__main__":
             if not load_checkpoint:
                 agent.learn(observation, reward, observation_, done)
             observation = observation_
-            score_history.append(score)
-            avg_score = np.mean(score_history[-100:])
+        score_history.append(score)
+        avg_score = np.mean(score_history[-10:])
             
         if avg_score > best_score:
             best_score = avg_score
@@ -41,5 +41,6 @@ if __name__ == "__main__":
      
     x = [i+1 for i in range(n_games)]
     #plot_learning_curve(x, score_history, figure_file)
+    plt.plot(x, score_history)
                 
 
