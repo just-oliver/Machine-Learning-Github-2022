@@ -22,8 +22,10 @@ class Agent:
         
         action_probabilities = tfp.distributions.Categorical(probs=probs)
         action = action_probabilities.sample()
+        #action = tf.expand_dims(tf.convert_to_tensor(np.argmax(probs)),0)
         self.action = action
         
+        #return np.argmax(probs)
         return action.numpy()[0]
     
     def save_models(self):
