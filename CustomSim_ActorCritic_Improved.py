@@ -135,6 +135,7 @@ def main(agent, score_history, best_score):
     state = np.zeros(6)
     datastore = np.array([[*state, 0]])
     vel = 0
+    max_abs_theta = 0
     
     while True:
         xh, yh = (400,400)
@@ -154,6 +155,7 @@ def main(agent, score_history, best_score):
         prev_theta = theta
         prev_phi = phi
         prev_iota = iota
+        max_abs_theta = max(max_abs_theta, abs(theta))
         
         state = np.array([theta, diff_theta, phi, diff_phi, iota, diff_iota])
         if timestep > 2000:
@@ -243,6 +245,7 @@ def main(agent, score_history, best_score):
         space.step(1/FPS)
         timestep += 1
     
+    print(max_abs_theta)
     for i in range(datastore.shape[0] - 1):
         obs = datastore[i,0:6]
         rew = datastore[i+1,6]
@@ -273,7 +276,7 @@ if __name__ == "__main__":
     if load_checkpoint:
         agent.load_models()
     
-    for x in range(10):
+    for x in range(5):
         size = 800, 800
         display = pygame.display.set_mode((size))
         options = DrawOptions(display)
