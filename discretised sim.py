@@ -1,13 +1,13 @@
-
 import pymunk, sys
 from pymunk.pygame_util import *
 from pymunk.vec2d import Vec2d
-
 import pygame
 from pygame.locals import *
 import numpy as np
 from PIL import Image
 from pymunk.pygame_util import DrawOptions
+import neat
+
 
 size = 800, 800
 display = pygame.display.set_mode((size))
@@ -26,18 +26,12 @@ def get_theta(x_h, x_1, y_h, y_1):
     return np.arctan2(x_1 - x_h, y_1 - y_h)
 
 def get_phi(x1, x2, y1, y2, theta):
-    return np.arctan2(x2 - x1, y2- y1) - theta
+    return np.arctan2(x2 - x1, y2 - y1) - theta
 
 def get_iota(x1, x2, y1, y2, theta, phi):
     return np.arctan2(x2 -x1, y2 - y1) - theta - phi
 
-class measurement_body:
-    def __init__(self):
-        self.body = pymunk.Body()
-        self.body.position = (400,40)
-        self.shape = pymunk.Circle(self.body, 1)
-        self.shape.color = (255,0,0)
-        space.add(self.body, self.shape)
+
     
 class Segment:
     def __init__(self, p0, a, b, radius=10, center_of_gravity = (0,0), density=0.01):
@@ -55,7 +49,7 @@ class Segment:
         space.add(self.body, self.shape)
 
 class Leg:
-    def __init__(self, p0, a, b, c, d, radius=10, center_of_gravity = (0,0), density=0.01):
+    def __init__(self, p0, a, b, c, d,radius=10, center_of_gravity = (0,0), density=0.01):
         self.body = pymunk.Body()
         self.body.position = p0
         self.radius = radius
@@ -118,20 +112,23 @@ class PinJoint:
         space.add(joint)
 
 class Swing_body:
-    def __init__(self,p0, vx1,vy1,vx2,vy2,vx3,vy3, radius=10, center_of_gravity = (0,0), density=0.05):
+    def __init__(self,p0, vx1,vy1,vx2,vy2,vx3,vy3, a, b, radius=10, center_of_gravity = (0,0), density=0.05):
         self.body = pymunk.Body()
         self.body.position = p0
-        s1 = pymunk.Segment(self.body, vx1, vy1 , radius=radius)
+        s1 = pymunk.Segment(self.body, vx1, vy1 , radius)
         s1.filter = pymunk.ShapeFilter(group = 1)
         s1.density = density
-        s2 = pymunk.Segment(self.body, vx2, vy2, radius=radius)
+        s2 = pymunk.Segment(self.body, vx2, vy2, radius)
         s2.filter = pymunk.ShapeFilter(group = 1)
         s2.density = density
-        s3 = pymunk.Segment(self.body, vx3,vy3, radius=radius)
+        s3 = pymunk.Segment(self.body, vx3,vy3, radius)
         s3.filter = pymunk.ShapeFilter(group = 1)
         s3.density = density
-        space.add(self.body, s1,s2,s3)
-        
+        s4 = pymunk.Segment(self.body, a, b, radius)
+        s4.filter = pymunk.ShapeFilter(group = 1)
+        s4.density = density
+        space.add(self.body, s1,s2,s3,s4)
+
 def angle_reached(theta, high_score):
     if len(high_score) == 0:
         high_score.append(theta)
@@ -147,7 +144,7 @@ hinge_point1 = (0, -100) # seg 1
 hinge_point2 = (0, 100)
 swing_body = (400, 625)
 swing_top1 = (30, -25)
-swing_top2 = (-30, -25)
+swing_top2 = (0, -25)
 swing_mid1 = (0, -25)
 swing_mid2 = (0, 25)
 swing_bottom1 = (-20, 25)
@@ -159,13 +156,13 @@ hinge_point4 = (0, 30)
 
 segment = Segment((400 , 500), hinge_point1 , hinge_point2)
 leg = Leg((420,680), hinge_point3, hinge_point4, (0,30), (15,30), density= 0.05)
-swing = Swing_body(swing_body, swing_top1,swing_top2, swing_mid1, swing_mid2, swing_bottom1, swing_bottom2)
+swing = Swing_body(swing_body, swing_top1,swing_top2, swing_mid1, swing_mid2, swing_bottom1, swing_bottom2,(0,25),(-20,-25))
 PinJoint(swing.body, leg.body, swing_bottom2, hinge_point3)
 PinJoint(segment.body, swing.body, hinge_point2, swing_mid1)
 PinJoint(b0, segment.body, (400,400), hinge_point1)
+rotation_lim = RotaryLimitJoint(segment.body,swing.body , -np.pi/4, np.pi/4)
 
-
-def game():
+def main():
     pygame.display.set_caption("Double pendulum interactive Simulation")
     high_score = []
     x = "const motor"
@@ -180,25 +177,20 @@ def game():
         x4, y4 = swing.body.position[0] + 25*np.sin(theta+phi) + 20*np.cos(theta+phi), swing.body.position[1] + 25*np.cos(theta+phi) - 20*np.sin(theta+phi) 
         x5, y5 = leg.body.position[0], leg.body.position[1]
         iota = get_iota(x4, x5, y4, y5, theta, phi)
-        print(f"iota={iota}")
         const_angvel = swing.body.angular_velocity
-        
-        # print(f"seg1:{angvel1}\nseg2:{angvel2}")
-        # print(leg.body.angular_velocity)
-        # abs_vel = np.sqrt(segment.body.velocity[0]**2 + segment.body.velocity[1]**2)
-        # if segment.body.velocity[0]< 1:
-        #     rad_vel = -abs_vel/150
-        # else:
-        #     rad_vel = abs_vel/150
-        # print(rad_vel)
         for event in pygame.event.get():  # checking for user input
             if event.type == pygame.QUIT:
                 print(f"Highest angle reached was:{np.rad2deg(high_score)}")
                 pygame.quit()
+                sys.exit()
             if event.type == KEYDOWN:
                 if event.key == K_RIGHT:
                     if iota < np.pi/2 and x == "const motor":
                         constant_motor.remove()
+                        x = "positive motor"
+                        pos_motor = Simplemotor(swing.body, leg.body, 5)
+                    elif iota < np.pi/2 and x == "negetive motor":
+                        neg_motor.remove()
                         x = "positive motor"
                         pos_motor = Simplemotor(swing.body, leg.body, 5)
                 elif event.key == K_LEFT:
@@ -206,41 +198,51 @@ def game():
                         constant_motor.remove()
                         x = "negetive motor"
                         neg_motor = Simplemotor(swing.body, leg.body, -5)
+                    elif iota > 0 and x == "positive motor":
+                        pos_motor.remove()
+                        x = "negetive motor"
+                        neg_motor = Simplemotor(swing.body, leg.body, -5)
+                elif event.key == K_UP:
+                    if x == "positive motor":
+                        pos_motor.remove()
+                        x = "const motor"
+                        constant_motor = Simplemotor(swing.body, leg.body, 0)
+                    elif x == "negetive motor":
+                        neg_motor.remove()
+                        x = "const motor"
+                        constant_motor = Simplemotor(swing.body, leg.body, 0)
             
-        if iota >= np.pi/2 and x == "positive motor":
+                        
+                        
+                        
+        if iota >= (np.pi/2-0.1) and x == "positive motor":
             pos_motor.remove()
             constant_motor = Simplemotor(swing.body, leg.body, 0)
             x = "const motor"
-        if iota <= 0 and x == "negetive motor":
+        if iota <= (-np.pi/6 + 0.08) and x == "negetive motor":
             neg_motor.remove()
             constant_motor = Simplemotor(swing.body, leg.body, 0)
             x = "const motor"
-                        
-                    
-        # keys = pygame.key.get_pressed()
-        # if keys[pygame.K_SPACE]: # kick input
-        #     simplemotor.switch = "on"
-        #     if iota >= np.pi/2:
-        #         if len(space.constraints) == 5:
-        #             space.remove(simplemotor.simplemotor)
-        #         leg.body.angular_velocity = angvel1
-        #     else:
-        #         simplemotor.drive(space.constraints, phi)
-        # else:
-        #     simplemotor.switch = "off"
-        #     if iota <= 0:
-        #         leg.body.angular_velocity = angvel1
-        #     else:
-        #         simplemotor.drive(space.constraints, phi)
+        print(iota)
         high_score = angle_reached(theta, high_score)
-        display.fill((255, 255, 255)) 
+        display.fill((255, 255, 255))
         space.debug_draw(options)
         pygame.display.update()
         clock.tick(FPS)  # limiting frames per second to 120
         space.step(1/FPS)
         print(len(space.constraints))
         print(x)
+    pygame.quit()
+    quit()
         
 
-game()
+main()
 pygame.quit()
+
+def run(config_path):
+    pass
+
+if __name__ == "__main__":
+    local_dir = os.path.dirname(__file__) # gives us path to the directory of this script
+    config_path = os.path.join(lacal_dir, "cofig-feedfor")
+    
