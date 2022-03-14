@@ -7,7 +7,7 @@ import numpy as np
 from PIL import Image
 from pymunk.pygame_util import DrawOptions
 from ActorCritic import Agent
-
+import matplotlib.pyplot as plt
 
 
 
@@ -117,7 +117,7 @@ def angle_reached(theta, high_score):
     return high_score
 
 
-def main(agent, score_history, best_score):
+def main(agent, score_history):
     pygame.display.set_caption("Double pendulum interactive Simulation")
     high_score = []
     x = "const motor"
@@ -161,9 +161,10 @@ def main(agent, score_history, best_score):
         if timestep > 2000:
             done = True
         action = agent.choose_action(state)
-        reward = (np.rad2deg(theta) ** 2) + (np.rad2deg(diff_theta) ** 2)
-        if action != 1:
-            reward = -reward / 10
+        #reward = ((theta ** 2) * 4) + (diff_theta ** 2) - ((iota ** 2) / 10)
+        #if action != 1:
+            #reward = reward - (np.abs(reward) * 0.5)
+        reward = (theta ** 2) + (diff_theta ** 2)
         datastore = np.append(datastore, np.array([[*state, reward]]), axis = 0)
         score += reward
         
@@ -245,7 +246,6 @@ def main(agent, score_history, best_score):
         space.step(1/FPS)
         timestep += 1
     
-    print(max_abs_theta)
     for i in range(datastore.shape[0] - 1):
         obs = datastore[i,0:6]
         rew = datastore[i+1,6]
@@ -259,24 +259,21 @@ def main(agent, score_history, best_score):
     
     score_history.append(score)
     avg_score = np.mean(score_history[-10:])
-    if avg_score > best_score:
-        best_score = avg_score
-        if update_model:
-            agent.save_models()
+    if update_model:
+        agent.save_models()
     
 
 
 if __name__ == "__main__":
-    agent = Agent(alpha=1e-5, n_actions=3)
-    global best_score
-    best_score = 0
+    agent = Agent(alpha=1e-5, n_actions=4)
     score_history = []
     load_checkpoint = False
     update_model = True
+    n_games = 50
     if load_checkpoint:
         agent.load_models()
     
-    for x in range(5):
+    for x in range(n_games):
         size = 800, 800
         display = pygame.display.set_mode((size))
         options = DrawOptions(display)
@@ -311,5 +308,8 @@ if __name__ == "__main__":
         PinJoint(b0, segment.body, (400,400), hinge_point1)
         rotation_lim = RotaryLimitJoint(segment.body,swing.body , -np.pi/4, np.pi/4)
 
-        main(agent, score_history, best_score)
+        main(agent, score_history)
+    x = [i+1 for i in range(n_games)]
+    plt.plot(x, score_history)
+    
     
