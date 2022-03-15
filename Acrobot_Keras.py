@@ -5,6 +5,7 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import matplotlib.pyplot as plt
+import time
 
 gamma = 0.99
 max_steps_per_episode = 500
@@ -14,6 +15,7 @@ eps = np.finfo(np.float32).eps.item()  # Smallest number such that 1.0 + eps != 
 
 num_inputs = 6
 num_actions = 3
+episode_limit = 10
 
 inputs = layers.Input(shape=(num_inputs,))
 
@@ -21,10 +23,9 @@ inputs = layers.Input(shape=(num_inputs,))
 # This section determines how the neural network processes data. Alter to experiment
 num_hidden = 30
 common = layers.Dense(num_hidden, activation="sigmoid")(inputs)
-dropper = layers.Dropout(0.1)(common)
 #######################################################################################
 
-action = layers.Dense(num_actions, activation="softmax")(dropper)
+action = layers.Dense(num_actions, activation="softmax")(common)
 critic = layers.Dense(1)(common)
 
 model = keras.Model(inputs=inputs, outputs=[action, critic])
@@ -38,6 +39,7 @@ running_reward = 0
 episode_count = 0
 
 running_keeper = np.array([])
+starttime = time.perf_counter()
 
 while True:  # Run until solved
     state = env.reset()
@@ -102,20 +104,29 @@ while True:  # Run until solved
     
     if episode_count % 10 == 0:
         template = "running reward: {:.2f} at episode {}"
-        print(template.format(running_reward, episode_count))
+        nowtime = time.perf_counter()
+        print(template.format(running_reward, episode_count) + f" at {nowtime - starttime:0.4f} secs")
     
-    if running_reward > 3750:  # Condition to consider the task solved
-        print("Solved at episode {}!".format(episode_count))
-        break
+    #if running_reward > 3750:  # Condition to consider the task solved
+        #print("Solved at episode {}!".format(episode_count))
+        #break
     
-    if episode_count == 1000:
+    if episode_count == episode_limit:
         break
 
 env.close()
-model.save("Acrobot_Model")
+#model.save("Acrobot_Model")
 
-episode_keeper = np.arange(running_keeper.size) + 1
+avtime = float("{:.2f}".format((nowtime - starttime) / episode_limit))
+print("Average time was " + str(avtime) + " seconds per episode")
+episode_keeper = np.arange(episode_limit) + 1
 plt.plot(episode_keeper, running_keeper)
 plt.xlabel("Running Reward")
 plt.ylabel("Episode")
-plt.title("Testing with 30-sigmoid on Acrobot-v1")
+plt.title("30-sigmoid - " + str(avtime) + " seconds per episode")
+plt.xlim(0, episode_limit)
+plt.ylim(0,5000)
+plt.grid(visible=True)
+
+
+
