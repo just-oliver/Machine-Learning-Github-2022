@@ -68,7 +68,8 @@ while True:  # Run until solved
             if done:
                 break
         
-        running_reward = 0.05 * episode_reward + (1 - 0.05) * running_reward
+        #running_reward = 0.05 * episode_reward + (1 - 0.05) * running_reward
+        running_reward = episode_reward
         
         returns = []
         discounted_sum = 0
@@ -121,7 +122,7 @@ avtime = float("{:.2f}".format((nowtime - starttime) / episode_limit))
 print("Average time was " + str(avtime) + " seconds per episode")
 episode_keeper = np.arange(episode_limit) + 1
 plt.plot(episode_keeper, running_keeper)
-plt.xlabel("Running Reward")
+plt.xlabel("Score")
 plt.ylabel("Episode")
 plt.title("30-sigmoid - " + str(avtime) + " seconds per episode")
 plt.xlim(0, episode_limit)
