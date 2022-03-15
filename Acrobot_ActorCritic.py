@@ -6,13 +6,13 @@ import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     env = gym.make("Acrobot-v1")
-    agent = Agent(alpha=1e-5, n_actions=env.action_space.n)
-    n_games = 100
+    agent = Agent(alpha=1e-3, n_actions=env.action_space.n)
+    n_games = 5
     
     best_score = env.reward_range[0]
     score_history = []
-    load_checkpoint = True
-    update_model = False
+    load_checkpoint = False
+    update_model = True
     time_limit = 500
     
     if load_checkpoint:
@@ -45,4 +45,8 @@ if __name__ == "__main__":
      
     x = [i+1 for i in range(n_games)]
     plt.plot(x, score_history)
+    plt.xlabel("Episode")
+    plt.ylabel("Score")
+    plt.title("10-relu-10-relu Testing")
+    plt.ylim(0, 5000)
 
