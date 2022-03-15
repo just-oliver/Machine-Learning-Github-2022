@@ -15,7 +15,7 @@ eps = np.finfo(np.float32).eps.item()  # Smallest number such that 1.0 + eps != 
 
 num_inputs = 6
 num_actions = 3
-episode_limit = 10
+episode_limit = 1000
 
 inputs = layers.Input(shape=(num_inputs,))
 
@@ -37,6 +37,7 @@ critic_value_history = []
 rewards_history = []
 running_reward = 0
 episode_count = 0
+cycles = 0
 
 running_keeper = np.array([])
 starttime = time.perf_counter()
@@ -66,7 +67,10 @@ while True:  # Run until solved
             episode_reward += reward
             
             if done:
+                cycles += timestep + 1
                 break
+            if timestep == max_steps_per_episode - 1:
+                cycles += timestep + 1
         
         #running_reward = 0.05 * episode_reward + (1 - 0.05) * running_reward
         running_reward = episode_reward
@@ -118,13 +122,13 @@ while True:  # Run until solved
 env.close()
 #model.save("Acrobot_Model")
 
-avtime = float("{:.2f}".format((nowtime - starttime) / episode_limit))
-print("Average time was " + str(avtime) + " seconds per episode")
+avtime = float("{:.5f}".format((nowtime - starttime) / cycles))
+print("Average time was " + str(avtime) + " seconds per cycle")
 episode_keeper = np.arange(episode_limit) + 1
 plt.plot(episode_keeper, running_keeper)
 plt.xlabel("Score")
 plt.ylabel("Episode")
-plt.title("30-sigmoid - " + str(avtime) + " seconds per episode")
+plt.title("30-sigmoid - " + str(avtime) + " seconds per cycle")
 plt.xlim(0, episode_limit)
 plt.ylim(0,5000)
 plt.grid(visible=True)
