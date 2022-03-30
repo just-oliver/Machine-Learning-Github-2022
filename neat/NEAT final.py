@@ -15,9 +15,6 @@ import numpy as np
 from PIL import Image
 from pymunk.pygame_util import DrawOptions
 import neat
-import random
-import time
-import os
 import visualize
 import pickle
 from matplotlib import pyplot as plt
@@ -371,9 +368,9 @@ if __name__ == '__main__':
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
-    p.add_reporter(neat.Checkpointer())
+    p.add_reporter(neat.Checkpointer(1))
     # Run NEAT
-    generations = 100
+    generations = 5
     winner = p.run(eval_genomes, generations)
     
     print('\nBest genome:\n{!s}'.format(winner))
@@ -389,9 +386,6 @@ if __name__ == '__main__':
         pickle.dump(winner, f)
         f.close()
     plt.plot(range(generations), max_angles)
-    plt.title("Max Theta over Generations pop:25, no initial connection")
-    plt.xlabel("Generation")
-    plt.ylabel("Theta/degrees")
     replay_genome(config_path) 
     pygame.quit()
     sys.exit()   
